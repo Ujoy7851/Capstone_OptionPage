@@ -1,8 +1,10 @@
 <template>
 <v-layout row>
   <v-card>
+      <v-card-text>
     <p>Please Sign In</p>
     <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
+      </v-card-text>
   </v-card>
 </v-layout>
     
@@ -29,6 +31,11 @@ export default {
         async loginG () {
             const auth = await this.$auth.loginG()
         }
+    },
+    mounted (){
+        chrome.runtime.sendMessage({
+            data:"logout"
+        });
     }
 }
 </script>
