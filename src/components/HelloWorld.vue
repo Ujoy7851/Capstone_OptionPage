@@ -15,9 +15,14 @@
         </template>  
       </v-switch>
 
-      <v-btn flat icon color="purple">
-        <v-icon>help</v-icon>
-      </v-btn>
+      <v-tooltip right>
+          <template #activator="data">
+            <v-btn flat icon v-on="data.on" color="purple">
+              <v-icon>help</v-icon>
+            </v-btn>
+          </template>
+          <span>asdfadfasdfasdfasfd asdfasfdasdfas dfasdfasdf asdf asdf safs dfsd fasdfasdf asdfas dfs fsf dfa dafsa fs dfs df dsfsdf asdfsfsdf asdfsfa dfad f asdf asfda sfdsa fsd fsaf ds sdfasdfad dadfdaf adfs</span>
+        </v-tooltip>
 
       <v-card>        
         <v-list subheader>
