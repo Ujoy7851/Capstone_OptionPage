@@ -1,58 +1,232 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+    <v-layout row>
+    <v-flex xs12 sm6 offset-sm3>
+      <v-card width="610" height="360">
+        <canvas id="output" width="610" height="360"></canvas>
+      </v-card>
+
+      <v-switch
+        color="purple"
+        v-model="toggle">
+        <template slot="label">
+          <strong class="primary--text">Use Custom Model</strong>
+        </template>  
+      </v-switch>
+
+      <v-btn flat icon color="purple">
+        <v-icon>help</v-icon>
+      </v-btn>
+
+      <v-card>        
+        <v-list subheader>
+          <v-subheader><strong class="primary--text">Customize model</strong></v-subheader>
+          <v-list-tile
+            v-for="item in items"
+            :key="item.title"
+            avatar
+          >
+            <v-list-tile-avatar>
+              <img :src="item.avatar">
+            </v-list-tile-avatar>
+
+            <v-list-tile-content>
+              <v-list-tile-title v-html="item.title"></v-list-tile-title>
+            </v-list-tile-content>
+
+            <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.index) }">Clear</v-btn>
+            <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.index)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
+            
+          </v-list-tile>
+        </v-list>
+      </v-card>
+      <v-btn dark color="purple" @click="save">Complete</v-btn>
+    </v-flex>
+    
+  </v-layout> 
   </div>
 </template>
 
 <script>
-export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+  import * as posenet from '@tensorflow-models/posenet';
+  import * as utils from "../util";
+  import "@babel/polyfill";
+  import * as mobilenetModule from '@tensorflow-models/mobilenet';
+  import * as tf from '@tensorflow/tfjs';
+  import * as knnClassifier from '@tensorflow-models/knn-classifier';
+  import {mapGetters} from 'vuex'
+  
+  let net;
+  let knn;
+  let mobilenet;
+
+  let video;
+  let width = 640, height = 480;
+  let stream;
+  let canvas;
+  let ctx;
+
+  let myIncomingClassifier = [];
+  let myGroups = [];
+  let training = -1;
+
+  export default {
+    data: () => ({
+      toggle: false,
+      items: [
+          { title: 'Pose1', avatar: require('../assets/pose1.png'), index: 1 },
+          { title: 'Pose2', avatar: require('../assets/pose2.png'), index: 2 },
+          { title: 'Pose3', avatar: require('../assets/pose3.png'), index: 3 },
+          { title: 'Pose4', avatar: require('../assets/pose4.png'), index: 4 },
+          { title: 'Pose5', avatar: require('../assets/pose5.png'), index: 5 },
+          { title: 'Pose6', avatar: require('../assets/pose6.png'), index: 6 }
+        ]
+    }),
+    methods: {
+      clearClass (event, index) {
+        // console.log("clear" + index);
+        knn.clearClass(index);
+        const exampleCount = knn.getClassExampleCount();
+        console.log(exampleCount[index]);
+      },
+      trainClass (event, index) {
+        // console.log("train" + index);
+        training = index;
+      },
+      save () {
+        saveModel();
+      }
+    },
+    props: {
+      source: String
+    },
+    async mounted(){      
+      try{
+          video = await loadVideo();
+      }
+      catch(e){
+          throw e;
+      }
+      canvas = document.getElementById('output');
+      ctx = canvas.getContext('2d');
+      net = await posenet.load(1.01);
+      knn = knnClassifier.create();
+      mobilenet = await mobilenetModule.load();
+      await loadModel();
+      detectPose(video,net);
+    },
+    beforeDestroy(){
+      net.dispose();
+      knn.dispose();
+      video.pause();
+      video.srcObject = null;
+      stream.getTracks().forEach((track) => {
+          track.stop();
+      });
+    }
   }
-}
+
+  async function loadVideo(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error(
+        'Browser API navigator.mediaDevices.getUserMedia not available');
+    }
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    let video = document.createElement('video');
+    video.height = height;
+    video.width = width;
+    video.srcObject = stream;
+    video.play();
+    return video;
+  }
+
+  function detectPose(video,net){
+      
+      async function detect(){
+          const pose = await net.estimateSinglePose(video,0.3,true,16);
+          ctx.clearRect(0,0,width,height);
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.translate(-width, 0);
+          ctx.drawImage(video,0,0,width,height);
+          ctx.restore();
+          if (pose.score >= 0.1) {
+            utils.drawKeypoints(pose.keypoints, 0.3, ctx);
+            utils.drawSkeleton(pose.keypoints, 0.3, ctx);
+          }
+          const image = tf.fromPixels(canvas);
+          tf.disableDeprecationWarnings();
+          let logits;
+          const infer = () => mobilenet.infer(image, 'conv_preds');
+          if (training != -1) {
+            logits = infer();
+            knn.addExample(logits, training);
+            const exampleCount = knn.getClassExampleCount();
+            console.log(exampleCount[training]);
+          }
+          image.dispose();
+          if (logits != null) {
+            logits.dispose();
+          }
+          requestAnimationFrame(detect);
+      }
+      detect();
+  }
+
+  //save and load model
+  async function defineClassifierModel(myPassedClassifier){
+    let myLayerList = [];
+    myLayerList[0] = [];    // for the input layer name as a string
+    myLayerList[1] = [];    // for the input layer
+    myLayerList[2] = [];    // for the concatenate layer name as a string
+    myLayerList[3] = [];    // for the concatenate layer
+                                                         
+    let myMaxClasses = myPassedClassifier.getNumClasses();                                 
+    for (let myClassifierLoop = 0; myClassifierLoop < myMaxClasses; myClassifierLoop++){
+      myLayerList[0][myClassifierLoop] = 'myInput'  + myClassifierLoop;
+      myLayerList[1][myClassifierLoop] = tf.input({shape: myPassedClassifier.getClassifierDataset()[myClassifierLoop].shape[0], name: myLayerList[1][myClassifierLoop]});
+      myLayerList[2][myClassifierLoop] = 'myInput'+myClassifierLoop+'Dense1';
+      myLayerList[3][myClassifierLoop] = tf.layers.dense({units: 1000, name: myGroups[myClassifierLoop]}).apply(myLayerList[1][myClassifierLoop]);
+    }
+                                           
+    const myConcatenate1 = tf.layers.concatenate({axis : 1, name: 'myConcatenate1'}).apply(myLayerList[3]);
+    const myConcatenate1Dense4 = tf.layers.dense({units: 1, name: 'myConcatenate1Dense4'}).apply(myConcatenate1);
+
+    const myClassifierModel = tf.model({inputs: myLayerList[1], outputs: myConcatenate1Dense4});                                                         
+    myClassifierModel.summary();
+    myPassedClassifier.getClassifierDataset()[0].print(true);
+
+    for (let myClassifierLoop = 0; myClassifierLoop < myMaxClasses; myClassifierLoop++ ){
+      const myInWeight = await myPassedClassifier.getClassifierDataset()[myClassifierLoop];
+      myClassifierModel.layers[myClassifierLoop + myMaxClasses].setWeights([myInWeight, tf.ones([1000])]);
+    }
+    return myClassifierModel;
+  }
+
+  async function saveModel(){
+    const myClassifierModel2 = await defineClassifierModel(knn);
+    myClassifierModel2.save('indexeddb://model');
+    console.log('Classifier saved');
+  }
+
+  async function loadModel(){
+    const myLoadedModel  = await tf.loadModel('https://posekey.github.io/youtube/model/model.json');
+    // const myLoadedModel  = await tf.loadModel('indexeddb://model');
+
+    const myMaxLayers = myLoadedModel.layers.length;
+    const myDenseEnd =  myMaxLayers - 2;
+    const myDenseStart = myDenseEnd/2;                                  
+    for (let myWeightLoop = myDenseStart; myWeightLoop < myDenseEnd; myWeightLoop++ ){
+        myIncomingClassifier[myWeightLoop - myDenseStart] = myLoadedModel.layers[myWeightLoop].getWeights()[0];
+        myGroups[myWeightLoop - myDenseStart] = myLoadedModel.layers[myWeightLoop].name 
+    }
+    knn.dispose()
+    knn.setClassifierDataset(myIncomingClassifier);
+    console.log('Classifier loaded');
+  }
+
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+<style lang="stylus">
+  
 </style>
