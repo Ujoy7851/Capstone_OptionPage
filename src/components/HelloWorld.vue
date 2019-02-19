@@ -55,7 +55,8 @@
   import * as mobilenetModule from '@tensorflow-models/mobilenet';
   import * as tf from '@tensorflow/tfjs';
   import * as knnClassifier from '@tensorflow-models/knn-classifier';
-  import {mapGetters} from 'vuex'
+  // import {mapGetters} from 'vuex'
+  import {mapState} from 'vuex'
   
   let net;
   let knn;
@@ -95,7 +96,17 @@
         training = index;
       },
       save () {
-        saveModel();
+        saveModel(this.userUid);
+        chrome.runtime.sendMessage(
+          chrome.runtime.id,
+          {
+            data:"saveModel",
+            uidm: this.userUid
+          },
+          (response)=>{
+            console.log(response);
+            }
+          );
       },
       logout (){
             this.$auth.logout();
@@ -104,6 +115,12 @@
     },
     props: {
       source: String
+    },
+    computed: {
+      ...mapState(['user']),
+      userUid () {
+        return !!this.user ? this.user.uid : ''
+      }
     },
     async mounted(){      
       try{
@@ -208,9 +225,9 @@
     return myClassifierModel;
   }
 
-  async function saveModel(){
+  async function saveModel(uid){
     const myClassifierModel2 = await defineClassifierModel(knn);
-    myClassifierModel2.save('indexeddb://model');
+    myClassifierModel2.save('indexeddb://'+ uid);
     console.log('Classifier saved');
   }
 
