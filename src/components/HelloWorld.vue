@@ -6,7 +6,6 @@
       <v-card width="610" height="360">
         <canvas id="output" width="610" height="360"></canvas>
       </v-card>
-
       <v-switch
         color="purple"
         v-model="toggle">
@@ -23,34 +22,31 @@
         <v-list subheader>
           <v-subheader><strong class="primary--text">Customize model</strong></v-subheader>
           <v-list-tile
-            v-for="item in items"
-            :key="item.title"
+            v-for="item in customd"
+            :key="item.id"
             avatar
           >
-            <v-list-tile-avatar>
+            <!-- <v-list-tile-avatar>
               <img :src="item.avatar">
             </v-list-tile-avatar>
-
             <v-list-tile-content>
               <v-list-tile-title v-html="item.title"></v-list-tile-title>
+            </v-list-tile-content> -->
+            <v-list-tile-content>
+              <v-form ref="form">
+                <v-text-field
+                  v-model="item.Description"
+                  label="Describe your pose please"
+                ></v-text-field>
+              </v-form>
             </v-list-tile-content>
-
-            <v-form ref="form">
-              <v-text-field
-                v-model="description"
-                label="Pose Description"
-              ></v-text-field>
-            </v-form>
-
             <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.index) }">Clear</v-btn>
             <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.index)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
-            
           </v-list-tile>
         </v-list>
       </v-card>
       <v-btn dark color="purple" @click="save">Complete</v-btn>
     </v-flex>
-    
   </v-layout> 
   </div>
 </template>
@@ -64,6 +60,7 @@
   import * as knnClassifier from '@tensorflow-models/knn-classifier';
   // import {mapGetters} from 'vuex'
   import {mapState} from 'vuex'
+  import store from '../store'
   
   let net;
   let knn;
@@ -82,15 +79,16 @@
   export default {
     data: () => ({
       toggle: false,
-      items: [
-          { title: 'Pose1', avatar: require('../assets/pose1.png'), index: 1 },
-          { title: 'Pose2', avatar: require('../assets/pose2.png'), index: 2 },
-          { title: 'Pose3', avatar: require('../assets/pose3.png'), index: 3 },
-          { title: 'Pose4', avatar: require('../assets/pose4.png'), index: 4 },
-          { title: 'Pose5', avatar: require('../assets/pose5.png'), index: 5 },
-          { title: 'Pose6', avatar: require('../assets/pose6.png'), index: 6 }
-        ],
-      description: ''
+      // items: [
+      //     { title: 'Pose1', avatar: require('../assets/pose1.png'), index: 1 },
+      //     { title: 'Pose2', avatar: require('../assets/pose2.png'), index: 2 },
+      //     { title: 'Pose3', avatar: require('../assets/pose3.png'), index: 3 },
+      //     { title: 'Pose4', avatar: require('../assets/pose4.png'), index: 4 },
+      //     { title: 'Pose5', avatar: require('../assets/pose5.png'), index: 5 },
+      //     { title: 'Pose6', avatar: require('../assets/pose6.png'), index: 6 }
+      //   ],
+      // description: '',
+      customd:[],
     }),
     methods: {
       clearClass (event, index) {
@@ -105,6 +103,11 @@
       },
       save () {
         saveModel(this.userUid);
+        let db = this.$db.requireDB();
+        let uid = store.state.user.uid;
+        db.collection('users').doc(uid).collection('model').doc('map').update({
+          customd: this.customd
+        });
         chrome.runtime.sendMessage(
           {
             data:"saveModel",
@@ -112,8 +115,8 @@
           },
           (response)=>{
             console.log(response);
-            }
-          );
+          }
+        );
       },
       logout (){
             this.$auth.logout();
@@ -129,7 +132,40 @@
         return !!this.user ? this.user.uid : ''
       }
     },
-    async mounted(){      
+    async mounted(){
+      //loading database
+      let db = this.$db.requireDB();
+      let uid = store.state.user.uid;
+      db.collection('users').doc(uid).collection('model').doc('map').get().then(
+        (doc)=>{
+          if(doc.exists){
+            this.customd = doc.data().customd;
+          }
+          else{
+            db.collection('users').doc(uid).collection('model').doc('map').set({
+                defaults:[null,null,null,null,null,null],
+                customs:[null,null,null,null,null,null],
+                customd:[
+                    {Description:"Pose 1", id: 1},
+                    {Description:"Pose 2", id: 2},
+                    {Description:"Pose 3", id: 3},
+                    {Description:"Pose 4", id: 4},
+                    {Description:"Pose 5", id: 5},
+                    {Description:"Pose 6", id: 6}
+                ],
+            });
+            this.customd = [
+                {Description:"Pose 1", id: 1},
+                {Description:"Pose 2", id: 2},
+                {Description:"Pose 3", id: 3},
+                {Description:"Pose 4", id: 4},
+                {Description:"Pose 5", id: 5},
+                {Description:"Pose 6", id: 6}
+            ];
+          }
+        }
+      );
+      //loading canvas & model
       try{
           video = await loadVideo();
       }
@@ -143,6 +179,16 @@
       mobilenet = await mobilenetModule.load();
       await loadModel();
       detectPose(video,net);
+      
+      chrome.runtime.sendMessage(
+        {
+          data:"login",
+          uidm: uid
+        },
+        (response)=>{
+          this.toggle = response.custom;
+        }
+      );
     },
     beforeDestroy(){
       net.dispose();

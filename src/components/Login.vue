@@ -1,17 +1,19 @@
 <template>
-<v-layout row>
-  <v-card>
-      <v-card-text>
-    <p>Please Sign In</p>
-    <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
-      </v-card-text>
-  </v-card>
-</v-layout>
+    <v-layout row>
+        <v-card>
+            <v-card-text>
+                <p>Please Sign In</p>
+                <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
+            </v-card-text>
+        </v-card>
+    </v-layout>
     
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
+import store from '../store'
+
 export default {
     name: 'Login',
     computed: {
