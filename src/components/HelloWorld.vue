@@ -35,6 +35,13 @@
               <v-list-tile-title v-html="item.title"></v-list-tile-title>
             </v-list-tile-content>
 
+            <v-form ref="form">
+              <v-text-field
+                v-model="description"
+                label="Pose Description"
+              ></v-text-field>
+            </v-form>
+
             <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.index) }">Clear</v-btn>
             <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.index)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
             
@@ -82,7 +89,8 @@
           { title: 'Pose4', avatar: require('../assets/pose4.png'), index: 4 },
           { title: 'Pose5', avatar: require('../assets/pose5.png'), index: 5 },
           { title: 'Pose6', avatar: require('../assets/pose6.png'), index: 6 }
-        ]
+        ],
+      description: ''
     }),
     methods: {
       clearClass (event, index) {

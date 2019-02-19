@@ -1,13 +1,10 @@
 <template>
 <v-layout row>
-    <v-flex xs12 sm6 offset-sm3>
-      <v-card>
-        <p>Please Sign In</p>
-        <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
-      </v-card>
-      
-    </v-flex>
-  </v-layout>
+  <v-card>
+    <p>Please Sign In</p>
+    <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
+  </v-card>
+</v-layout>
     
 </template>
 
