@@ -98,7 +98,6 @@
       save () {
         saveModel(this.userUid);
         chrome.runtime.sendMessage(
-          chrome.runtime.id,
           {
             data:"saveModel",
             uidm: this.userUid
@@ -232,7 +231,7 @@
   }
 
   async function loadModel(){
-    const myLoadedModel  = await tf.loadModel('https://posekey.github.io/youtube/model/model.json');
+    const myLoadedModel  = await tf.loadModel('https://ujoy7851.github.io/Capstone/model/model.json');
     // const myLoadedModel  = await tf.loadModel('indexeddb://model');
 
     const myMaxLayers = myLoadedModel.layers.length;
