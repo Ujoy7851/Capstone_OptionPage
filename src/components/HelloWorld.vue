@@ -2,6 +2,7 @@
   <div>
     <v-layout row>
     <v-flex xs12 sm6 offset-sm3>
+      <v-btn dark color="purple" v-on:click="logout">Log out</v-btn>
       <v-card width="610" height="360">
         <canvas id="output" width="610" height="360"></canvas>
       </v-card>
@@ -95,7 +96,11 @@
       },
       save () {
         saveModel();
-      }
+      },
+      logout (){
+            this.$auth.logout();
+            this.$router.replace({name: 'login'})
+        }
     },
     props: {
       source: String

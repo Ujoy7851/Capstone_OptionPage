@@ -8,14 +8,16 @@
       <span class="font-weight-light subheading">Option Page</span>
       <!-- <v-spacer></v-spacer> -->
       <!-- <v-btn dark color="purple" v-on:click="loginG">Login</v-btn> -->
+      <!-- <v-btn dark color="purple" v-on:click="logout">Log out</v-btn> -->
     </v-toolbar>
 
     <v-content>
-      <HelloWorld/>
+      <!-- <HelloWorld/> -->
+      <router-view></router-view>
     </v-content>
   </v-app>
 </template>
-
+np
 <script>
 import HelloWorld from './components/HelloWorld'
 
