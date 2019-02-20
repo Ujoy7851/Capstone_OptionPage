@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-toolbar app color="amber">
+    <v-toolbar app color="secondary">
       <v-toolbar-title class="title">
         <span>PoseKey</span>        
       </v-toolbar-title>
@@ -11,10 +11,10 @@
       <!-- <v-btn dark color="purple" v-on:click="logout">Log out</v-btn> -->
     </v-toolbar>
 
-    <v-content>
+    <v-container fluid grid-list-sm style="margin-top:50px;">
       <!-- <HelloWorld/> -->
       <router-view></router-view>
-    </v-content>
+    </v-container>
   </v-app>
 </template>
 <script>
@@ -50,3 +50,15 @@ export default {
     },
 }
 </script>
+
+<style>
+
+#app {
+  /* font-family: 'Avenir', Helvetica, Arial, sans-serif; */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  /* color: #2c3e50; */
+}
+</style>
+

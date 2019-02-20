@@ -1,13 +1,10 @@
 <template>
-    <v-layout row>
-        <v-card>
-            <v-card-text>
-                <p>Please Sign In</p>
-                <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
-            </v-card-text>
-        </v-card>
-    </v-layout>
-    
+    <v-card>
+        <v-card-text>
+            <p>Please Sign in to Proceed</p>
+        <v-btn color="primary" v-on:click="loginG">sign In</v-btn>
+        </v-card-text>
+    </v-card>
 </template>
 
 <script>
