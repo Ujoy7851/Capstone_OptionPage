@@ -251,7 +251,7 @@
         },
         (response)=>{
           this.toggle = response.customm;
-          this.local = response.locamm;
+          this.local = response.localm;
         }
       );
     },
