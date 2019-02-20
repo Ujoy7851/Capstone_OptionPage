@@ -1,11 +1,20 @@
 <template>
   <div>
-    <v-layout row>
-      <v-flex xs12 sm6 offset-sm3>
+    <v-layout row justify-center>
+      <v-flex xs12 sm6>
+        <v-layout justify-center>
+          <v-card width="640" height="480">
+            <canvas id="output" width="640" height="480"></canvas>
+          </v-card>
+        </v-layout>
+      </v-flex>
+    </v-layout>
+    <v-layout row justify-center>
+      <v-flex xs12 sm6>
         <v-btn dark color="purple" v-on:click="logout">Log out</v-btn>
-        <v-card width="610" height="360">
+        <!-- <v-card width="610" height="360">
           <canvas id="output" width="610" height="360"></canvas>
-        </v-card>
+        </v-card> -->
         <v-switch
           color="purple"
           v-model="toggle">
