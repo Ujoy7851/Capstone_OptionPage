@@ -1,8 +1,8 @@
 <template>
-
-  <v-layout row wrap>
+  <v-layout row wrap style="padding:30px;">
     <v-flex xs12>
       <div style="text-align:end">
+        {{userName}}
         <v-btn dark color="purple" v-on:click="logout">Log out</v-btn>
       </div>
     </v-flex>
@@ -20,7 +20,8 @@
               Don't Worry, you only need to press few buttons to train your own AI model.<br>
               To create a custom model, please click the button below!<br>
               Default model can still be used that you can change the setting in popup page.<br>
-              <v-btn color="primary">Custom Model</v-btn>
+              <br>
+              <v-btn color="primary" @click="toggle=true">Custom Model</v-btn>
             </v-card-text>
             <!-- <v-divider></v-divider>
             <v-card-actions>
@@ -30,7 +31,9 @@
           </v-window-item>
           <v-window-item :value="true">
             <v-list subheader>
-              <v-subheader><strong class="primary--text">Customize model</strong></v-subheader>
+              <!-- <v-subheader><strong class="primary--text">Customize model</strong></v-subheader> -->
+              
+              <v-divider></v-divider>
               <v-list-tile
                 v-for="item in customd"
                 :key="item.id"
@@ -144,7 +147,7 @@
 
   export default {
     data: () => ({
-      toggle: true,
+      toggle: false,
       local: false,
       customd:[],
     }),
@@ -188,6 +191,9 @@
       ...mapState(['user']),
       userUid () {
         return !!this.user ? this.user.uid : ''
+      },
+      userName (){
+        return !!this.user ? this.user.displayName : ''
       }
     },
     async mounted(){
