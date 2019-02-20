@@ -17,7 +17,6 @@
     </v-content>
   </v-app>
 </template>
-np
 <script>
 import HelloWorld from './components/HelloWorld'
 
