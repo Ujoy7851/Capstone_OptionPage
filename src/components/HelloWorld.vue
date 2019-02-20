@@ -47,8 +47,8 @@
                     ></v-text-field>
                   </v-form>
                 </v-list-tile-content>
-                <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.index) }">Clear</v-btn>
-                <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.index)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
+                <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.id) }">Clear</v-btn>
+                <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.id)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
               </v-list-tile>
             </v-list>
             <v-card-actions>
@@ -169,15 +169,15 @@
         db.collection('users').doc(uid).collection('model').doc('map').update({
           customd: this.customd
         });
-        chrome.runtime.sendMessage(
-          {
-            data:"saveModel",
-            uidm: this.userUid
-          },
-          (response)=>{
-            console.log(response);
-          }
-        );
+        // chrome.runtime.sendMessage(
+        //   {
+        //     data:"saveModel",
+        //     uidm: this.userUid
+        //   },
+        //   (response)=>{
+        //     console.log(response);
+        //   }
+        // );
       },
       logout (){
             this.$auth.logout();
