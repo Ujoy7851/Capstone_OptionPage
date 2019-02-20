@@ -1,72 +1,5 @@
 <template>
-  <v-layout row wrap>
-    <v-flex xs12>
-      <div style="text-align:end">
-        <v-btn dark color="purple" v-on:click="logout">Log out</v-btn>
-      </div>
-    </v-flex>
-    <v-flex d-flex>
-      <v-card>
-        <v-card-title>
-          <h2>Custom Model</h2>
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-window v-model="toggle">
-          <v-window-item :value="false">
-            <v-card-text>
-              PoseKey encourages users to use Posekey in creative ways!<br>
-              Therefore users can change default poses into their own unique poses by using a custom AI model.<br>
-              Don't Worry, you only need to press few buttons to train your own AI model.<br>
-              To create a custom model, please click the button below!<br>
-              Default model can still be used that you can change the setting in popup page.<br>
-              <v-btn color="primary">Custom Model</v-btn>
-            </v-card-text>
-            <!-- <v-divider></v-divider>
-            <v-card-actions>
-              <v-btn color="primary">Custom Model</v-btn>
-              <v-switch v-model="toggle"></v-switch>
-            </v-card-actions> -->
-          </v-window-item>
-          <v-window-item :value="true">
-            <v-list subheader>
-              <v-subheader><strong class="primary--text">Customize model</strong></v-subheader>
-              <v-list-tile
-                v-for="item in customd"
-                :key="item.id"
-                avatar
-              >
-                <v-list-tile-content>
-                  <v-form ref="form">
-                    <v-text-field
-                      v-model="item.Description"
-                      label="Describe your pose please"
-                    ></v-text-field>
-                  </v-form>
-                </v-list-tile-content>
-                <v-btn flat color="purple" :disabled="!toggle" @click="(event) => { clearClass(event, item.index) }">Clear</v-btn>
-                <v-btn flat color="purple" :disabled="!toggle" @mousedown="(event) => {trainClass(event, item.index)}" @mouseup="(event) => {trainClass(event, -1)}">Train</v-btn>
-              </v-list-tile>
-            </v-list>
-            <v-card-actions>
-              <v-btn dark color="purple" @click="save">Complete</v-btn>
-            </v-card-actions>
-          </v-window-item>
-        </v-window>
-      </v-card>
-    </v-flex>
-    <v-flex>
-      <v-card>
-        <v-card-title>
-          <h2>Mirror</h2>
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-media>
-          <canvas id="output" width="640" height="480"></canvas>
-        </v-card-media>
-      </v-card>
-    </v-flex>
-  </v-layout>
-  <!-- <div>
+  <div>
     <v-card>
         <v-card-media>
         <canvas id="output" width="640" height="480"></canvas>
@@ -114,7 +47,7 @@
             <v-btn dark color="purple" @click="save">Complete</v-btn>
           </v-card-actions>
         </v-card>
-  </div> -->
+  </div>
 </template>
 
 <script>
